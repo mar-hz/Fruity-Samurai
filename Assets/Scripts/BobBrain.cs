@@ -12,6 +12,8 @@ public class BobBrain : MonoBehaviour
     public float gravitySlowdown = 0.5f;
     public float knockbackForce = 1000f;
 
+    HealthBar healthbar;
+
     public static Dictionary<string, int> armorPoints = new()  
     {
         { "#FF0078", 1 },
@@ -34,6 +36,7 @@ public class BobBrain : MonoBehaviour
         gameObject.transform.Find("Collider").gameObject.GetComponent<GenericListener>().onCollisionEnter.AddListener(OnCollisionEnter);
         body.linearVelocity = body.linearVelocity + Vector3.down;
 
+        healthbar = GameObject.Find("HealthBarElem").GetComponent<HealthBar>();
         custom = gameObject.GetComponent<HumanCustomizer>();
     }
 
@@ -81,6 +84,7 @@ public class BobBrain : MonoBehaviour
 
                 if (collision.gameObject.GetComponent<PlayerController>().alive && !animator.GetBool("onGround") && !exploded) {
                     collision.gameObject.GetComponent<PlayerController>().health -= armorPoints["#" + ColorUtility.ToHtmlStringRGB(custom.customization.shirtColor)];
+                    healthbar.SetHealth((float) collision.gameObject.GetComponent<PlayerController>().health);
                 }
             }
          

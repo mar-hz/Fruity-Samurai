@@ -378,6 +378,7 @@ MonoBehaviour:
   gravitySlowdown: 0.2
   knockbackForce: 1000
   pineappleMeshPart: {fileID: 0}
+  healthbar: {fileID: 4892684398902783892, guid: 8bb7056f0f1d10e4bbfc9b6a2767f800, type: 3}
 --- !u!114 &3880054713707026158
 MonoBehaviour:
   m_ObjectHideFlags: 0
