@@ -10,7 +10,7 @@ public class BobBrain : MonoBehaviour
     BobExploder exploder;
     Collider collider;
     Transform bobRoot;
-    bool exploded = false;
+    public bool exploded = false;
     public float gravitySlowdown = 0.5f;
     public float knockbackForce = 1000f;
 

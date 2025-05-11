@@ -7,7 +7,6 @@ using static UnityEngine.LightAnchor;
 public class PlayerController : MonoBehaviour
 {
     public float speed = 10f;
-    public float sprintSpeed = 20f;
     public float speedLimit = 30f;
     public float jumpForce = 5f;
     public float fallMultiplier = 1.5f;
@@ -34,6 +33,13 @@ public class PlayerController : MonoBehaviour
     public int comboCounter = 0;
     public float multiplier { get; private set; } = 1f;
     public float maxMultiplier = 10.0f;
+    public float dashSpeed = 25f;
+    public float dashDuration = 0.15f;
+    public float dashCooldown = 1.0f;
+    private float lastDashTime = -Mathf.Infinity;
+    private bool isDashing = false;
+    private float dashEndTime;
+
 
     void Start()
     {
@@ -116,8 +122,12 @@ public class PlayerController : MonoBehaviour
                 //canAttack = false;
             }
         }
-        sprinting = Input.GetKey(KeyCode.LeftShift);
         bool canJump = isGrounded || manualJump;
+
+        if (Input.GetKeyDown(KeyCode.LeftShift) && isGrounded && Time.time >= lastDashTime + dashCooldown)
+        {
+            StartDash();
+        }
 
         if (canJump && Input.GetKeyDown(KeyCode.Space))
         {
@@ -166,6 +176,16 @@ public class PlayerController : MonoBehaviour
         comboCounter = 0;
         multiplier = 1f;
     }
+    void StartDash()
+    {
+        isDashing = true;
+        dashEndTime = Time.time + dashDuration;
+        lastDashTime = Time.time;
+
+        // Face direction determines dash
+        float direction = horizontalInput != 0 ? Mathf.Sign(horizontalInput) : (playerTransform.rotation.eulerAngles.y == 90 ? 1f : -1f);
+        playerRigidbody.linearVelocity = new Vector3(direction * dashSpeed, 0f, 0f);
+    }
 
     void FixedUpdate()
     {
@@ -190,15 +210,20 @@ public class PlayerController : MonoBehaviour
         }
 
        
-        Vector3 movement = sprinting
-            ? new Vector3(horizontalInput * sprintSpeed, playerRigidbody.linearVelocity.y, 0) 
-            : new Vector3(horizontalInput * speed, playerRigidbody.linearVelocity.y, 0);
+        Vector3 movement = new Vector3(horizontalInput * speed, playerRigidbody.linearVelocity.y, 0);
 
 
         if (knockbackTimer > 0f)
         {
             playerRigidbody.linearVelocity = externalVelocity;
             knockbackTimer -= Time.fixedDeltaTime;
+        }
+        else if (isDashing)
+        {
+            if (Time.time >= dashEndTime)
+            {
+                isDashing = false;
+            }
         }
         else
         {
@@ -208,8 +233,6 @@ public class PlayerController : MonoBehaviour
         playerAnimator.SetFloat("speed", Math.Abs(movement.x));
 
         bool isAirborne = !isGrounded;
-
-        Debug.Log(Math.Sign(-movement.x) + " " + +wallDir);
 
         if (wallColliding && isAirborne && !(jumpRequested || doubleJumpRequested) && movement.x == 0)
         {
