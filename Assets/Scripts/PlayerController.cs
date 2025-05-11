@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEditor;
 using UnityEngine;
+using static UnityEngine.LightAnchor;
 
 public class PlayerController : MonoBehaviour
 {
@@ -24,6 +25,7 @@ public class PlayerController : MonoBehaviour
     public float knockbackTimer;
     public Vector3 externalVelocity;
     public GameObject pineappleMeshPart;
+    bool manualJump = false;
 
     void Start()
     {
@@ -98,17 +100,18 @@ public class PlayerController : MonoBehaviour
             }
         }
         sprinting = Input.GetKey(KeyCode.LeftShift);
-
-        if (isGrounded && Input.GetKeyDown(KeyCode.Space))
+        bool canJump = isGrounded || manualJump;
+        
+        if (canJump && Input.GetKeyDown(KeyCode.Space))
         {
             jumpRequested = true;
         }
-        else if (!isGrounded && doubleJump && Input.GetKeyDown(KeyCode.Space))
+        else if (!canJump && doubleJump && Input.GetKeyDown(KeyCode.Space))
         {
             doubleJumpRequested = true;
         }
 
-        if (!stateInfo.IsName("doubleJump"))
+        if (!stateInfo.IsName("doubleJump") && !stateInfo.IsName("wallCling"))
         {
             if (horizontalInput > 0)
             {
@@ -125,6 +128,8 @@ public class PlayerController : MonoBehaviour
     float verticalInput;
     bool sprinting;
     bool jumpRequested, doubleJumpRequested;
+    public bool isWallClinging = false, wallColliding = false;
+    public int wallDir = 0; // 1 = right wall, -1 = left wall
 
     void FixedUpdate()
     {
@@ -148,9 +153,7 @@ public class PlayerController : MonoBehaviour
             playerRigidbody.AddForce(extraGravity, ForceMode.VelocityChange);
         }
 
-        if (horizontalInput > 0 && IsBlocked(Vector3.right)) horizontalInput = 0;
-        if (horizontalInput < 0 && IsBlocked(Vector3.left)) horizontalInput = 0;
-
+       
         Vector3 movement = sprinting
             ? new Vector3(horizontalInput * sprintSpeed, playerRigidbody.linearVelocity.y, 0) 
             : new Vector3(horizontalInput * speed, playerRigidbody.linearVelocity.y, 0);
@@ -167,6 +170,35 @@ public class PlayerController : MonoBehaviour
         }
 
         playerAnimator.SetFloat("speed", Math.Abs(movement.x));
+
+        bool isAirborne = !isGrounded;
+
+        Debug.Log(Math.Sign(-movement.x) + " " + +wallDir);
+
+        if (wallColliding && isAirborne && !(jumpRequested || doubleJumpRequested) && movement.x == 0)
+        {
+
+            // Stick to wall
+            playerRigidbody.linearVelocity = new Vector3(0f, 0f, 0f); // Cancel gravity
+            isWallClinging = true;
+            if (playerAnimator.GetCurrentAnimatorStateInfo(0).IsName("wallCling"))
+                playerAnimator.Play("walllCling", 0);
+
+            playerAnimator.SetBool("sticking", true);
+            manualJump = true;
+
+            if (wallDir == 1)
+                playerTransform.rotation = Quaternion.Euler(0, 90, 0); // Facing right wall
+            else if (wallDir == -1)
+                playerTransform.rotation = Quaternion.Euler(0, -90, 0); // Facing left wall
+
+        }
+        else
+        {
+            playerAnimator.SetBool("sticking", false);
+            manualJump = false;
+            isWallClinging = false;
+        }
     }
 
     public void ApplyKnockback(Vector3 force, float duration)
@@ -185,16 +217,32 @@ public class PlayerController : MonoBehaviour
     {
         if (jumpRequested)
         {
-            playerRigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            Vector3 jumpDirection = Vector3.up;
+
+            if (isWallClinging)
+            {
+                jumpDirection += Vector3.left * wallDir; // jump opposite to wall
+                isWallClinging = false;
+            }
+
+            playerRigidbody.AddForce(jumpDirection.normalized * jumpForce, ForceMode.Impulse);
             doubleJump = true;
             jumpRequested = false;
         }
         else if (doubleJumpRequested)
         {
             playerAnimator.CrossFade("doubleJump", 0.1f);
-            playerRigidbody.AddForce(Vector3.up * (jumpForce * 1.1f), ForceMode.Impulse);
             doubleJump = false;
             doubleJumpRequested = false;
+            Vector3 jumpDirection = Vector3.up;
+
+            if (isWallClinging)
+            {
+                jumpDirection += Vector3.left * wallDir; // jump opposite to wall
+                isWallClinging = false;
+            }
+            playerRigidbody.AddForce(jumpDirection.normalized * (jumpForce * 1.1f), ForceMode.Impulse);
+
         }
     }
 
@@ -222,6 +270,24 @@ public class PlayerController : MonoBehaviour
             yAcceleration = 0; // Reset Y acceleration on ground contact
             playerAnimator.SetBool("isGrounded", true);
             playerAnimator.SetFloat("yAccel", yAcceleration); // Reset Y acceleration in animator
+        }
+
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
+        {
+            // Get the contact point normal to determine direction
+            Vector3 normal = collision.contacts[0].normal;
+            float dot = Vector3.Dot(normal, transform.right);
+
+            if (dot > 0.5f)
+                wallDir = -1;
+            else if (dot < -0.5f)
+                wallDir = 1;
+            wallColliding = true;
+        }
+        else
+        {
+            wallDir = 0;
+            wallColliding = false;
         }
     }
 
@@ -256,9 +322,35 @@ public class PlayerController : MonoBehaviour
         ApplyShaderUniformToChildren(pineappleMeshPart, "baseColorFactor", Color.white); // Or whatever the original is
     }
 
-    bool IsBlocked(Vector3 direction)
+    void OnCollisionStay(Collision collision)
     {
-        Ray ray = new Ray(playerTransform.position, direction);
-        return Physics.Raycast(ray, 0.6f, LayerMask.GetMask("Wall")); // Adjust distance & layer
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
+        {
+            // Get the contact point normal to determine direction
+            Vector3 normal = collision.contacts[0].normal;
+            float dot = Vector3.Dot(normal, transform.right);
+
+            if (dot > 0.5f)
+                wallDir = -1;
+            else if (dot < -0.5f)
+                wallDir = 1;
+            wallColliding = true;
+        } else
+        {
+            wallDir = 0;
+            wallColliding = false;
+        }
+    }
+
+    void OnDrawGizmos()
+    {
+        Vector3 origin = transform.position;
+        float rayDistance = 1f;
+
+        Gizmos.color = Color.green;
+        Gizmos.DrawLine(origin, Vector3.left * rayDistance);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(origin, Vector3.right * rayDistance);
     }
 }
