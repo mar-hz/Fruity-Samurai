@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     public float sprintSpeed = 20f;
     public float speedLimit = 30f;
     public float jumpForce = 5f;
+    public float fallMultiplier = 1.5f;
     private Transform playerTransform;
     private Rigidbody playerRigidbody;
     private Animator playerAnimator;
@@ -17,6 +18,7 @@ public class PlayerController : MonoBehaviour
     float previousYVelocity = 0f;
     private float yAcceleration = 0f;
     bool canAttack = true;
+    bool doubleJump = true;
 
     void Start()
     {
@@ -46,6 +48,7 @@ public class PlayerController : MonoBehaviour
                 // Animation finished
                 canAttack = true;
             }
+            
         } else
         {
             canAttack = true;
@@ -56,13 +59,13 @@ public class PlayerController : MonoBehaviour
             if (Input.GetKey(KeyCode.E))
             {
                 AttackUp();
-                canAttack = false;
+                //canAttack = false;
             }
 
             if (Input.GetKey(KeyCode.Q))
             {
                 Attack();
-                canAttack = false;
+                //canAttack = false;
             }
         }
         sprinting = Input.GetKey(KeyCode.LeftShift);
@@ -81,6 +84,7 @@ public class PlayerController : MonoBehaviour
         previousYVelocity = currentYVelocity;
 
         playerAnimator.SetFloat("yAccel", yAcceleration);
+        playerAnimator.SetFloat("yVel", playerRigidbody.linearVelocity.y);
 
         playerAnimator.SetFloat("direction", horizontalInput);
         if (horizontalInput > 0)
@@ -92,11 +96,15 @@ public class PlayerController : MonoBehaviour
             playerTransform.rotation = Quaternion.Euler(0, -90, 0);
         }
 
-        if (isGrounded && verticalInput > 0)
+        Jump();
+        
+        // Custom gravity
+        if (!isGrounded)
         {
-            //isGrounded = false;
-            playerRigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            Vector3 extraGravity = Vector3.up * Physics.gravity.y * fallMultiplier * Time.fixedDeltaTime;
+            playerRigidbody.AddForce(extraGravity, ForceMode.VelocityChange);
         }
+        
 
         Vector3 movement = sprinting
             ? new Vector3(horizontalInput * sprintSpeed, playerRigidbody.linearVelocity.y, 0) 
@@ -110,6 +118,30 @@ public class PlayerController : MonoBehaviour
         
     }
 
+    void Jump()
+    {
+        if (isGrounded && verticalInput > 0)
+        {
+            playerRigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+            doubleJump = true;
+        }
+        else if (!isGrounded && doubleJump)
+        {
+            if(Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W))
+            {
+                // Check if the player is not already in a jump animation
+                AnimatorStateInfo stateInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
+                if (stateInfo.IsName("doubleJump"))
+                {
+                    return; // Prevent double jump if already in jump animation
+                }
+                
+                playerAnimator.SetTrigger("doubleJump");
+                playerRigidbody.AddForce(Vector3.up * (jumpForce * 1.5f), ForceMode.Impulse);
+                doubleJump = false;
+            }
+        }
+    }
     void AttackUp()
     {
         playerAnimator.SetTrigger("attkUp");
