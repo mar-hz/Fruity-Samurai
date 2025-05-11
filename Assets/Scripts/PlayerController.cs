@@ -29,6 +29,7 @@ public class PlayerController : MonoBehaviour
 
     public int health;
     public bool alive;
+    public int score = 0;
 
     void Start()
     {
@@ -42,7 +43,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (!alive) {
+        if (!alive)
+        {
             return;
         }
 
@@ -65,12 +67,14 @@ public class PlayerController : MonoBehaviour
                 // Animation finished
                 canAttack = true;
                 playerAnimator.SetBool("attacking", false);
-            } else
+            }
+            else
             {
                 canAttack = false;
             }
 
-        } else
+        }
+        else
         {
             canAttack = true;
         }
@@ -110,7 +114,7 @@ public class PlayerController : MonoBehaviour
         }
         sprinting = Input.GetKey(KeyCode.LeftShift);
         bool canJump = isGrounded || manualJump;
-        
+
         if (canJump && Input.GetKeyDown(KeyCode.Space))
         {
             jumpRequested = true;
@@ -131,7 +135,10 @@ public class PlayerController : MonoBehaviour
                 playerTransform.rotation = Quaternion.Euler(0, -90, 0);
             }
 
-        if (health <= 0) {
+        }
+
+        if (health <= 0)
+        {
             alive = false;
         }
     }

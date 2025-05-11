@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using TMPro;
 
 public class BobBrain : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class BobBrain : MonoBehaviour
     public float knockbackForce = 1000f;
 
     HealthBar healthbar;
+    TMP_Text score;
 
     public static Dictionary<string, int> armorPoints = new()  
     {
@@ -38,6 +40,8 @@ public class BobBrain : MonoBehaviour
 
         healthbar = GameObject.Find("HealthBarElem").GetComponent<HealthBar>();
         custom = gameObject.GetComponent<HumanCustomizer>();
+        score = GameObject.Find("ScoreText").GetComponent<TMP_Text>();
+
     }
 
     // Update is called once per frame
@@ -71,6 +75,13 @@ public class BobBrain : MonoBehaviour
                 Destroy(collider);
                 collider = null;
                 exploded = true;
+
+                if (collision.gameObject.GetComponent<PlayerController>().alive)
+                {
+                    collision.gameObject.GetComponent<PlayerController>().score += armorPoints["#" + ColorUtility.ToHtmlStringRGB(custom.customization.shirtColor)];
+                    healthbar.SetHealth((float)collision.gameObject.GetComponent<PlayerController>().health);
+                    score.text = collision.gameObject.GetComponent<PlayerController>().score.ToString();
+                }
             } else
             {
                 Rigidbody playerRb = collision.gameObject.GetComponent<Rigidbody>();
