@@ -12,8 +12,13 @@ public class NPCExploder : MonoBehaviour
     private List<Transform> explodedParts = new List<Transform>();
     public LayerMask excludedLayers;
     public string deadEnemies;
+    public AudioClip explosionFX;
+    public AudioSource sfxSource;
+
     public void Explode()
     {
+        sfxSource.PlayOneShot(explosionFX);
+
         GetComponent<Animator>().enabled = false;
         GetComponent<Rigidbody>().isKinematic = false;
 

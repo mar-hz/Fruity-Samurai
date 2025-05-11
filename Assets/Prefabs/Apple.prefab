@@ -183,6 +183,9 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 200
   appleDamage: 50
+  exploded: 0
+  yippie: {fileID: 8300000, guid: 05af9230df200d84a9955f20dcba2c81, type: 3}
+  death: {fileID: 8300000, guid: 000dd2ebadbeae543a6f43fc3c183554, type: 3}
 --- !u!136 &-4926347888711769751
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -254,3 +257,5 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 200
   deadEnemies: DeadEnemies
+  explosionFX: {fileID: 8300000, guid: beaa626a565cf3a4cb0bc664341216f0, type: 3}
+  sfxSource: {fileID: 0}

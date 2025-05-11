@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using UnityEditor;
 using UnityEngine;
@@ -39,7 +38,11 @@ public class PlayerController : MonoBehaviour
     private float lastDashTime = -Mathf.Infinity;
     private bool isDashing = false;
     private float dashEndTime;
-  
+    public AudioClip[] lightSaberFx;
+    public AudioClip jumpFX, walkFX, runFX, hurtFX, dashFX;
+    public AudioSource sfxSource;
+    private float footstepTimer = 0f;
+    public float footstepInterval = 0.4f;
 
     void Start()
     {
@@ -184,6 +187,7 @@ public class PlayerController : MonoBehaviour
         isDashing = true;
         dashEndTime = Time.time + dashDuration;
         lastDashTime = Time.time;
+        sfxSource.PlayOneShot(dashFX);
 
         // Face direction determines dash
         float direction = horizontalInput != 0 ? Mathf.Sign(horizontalInput) : (playerTransform.rotation.eulerAngles.y == 90 ? 1f : -1f);
@@ -234,7 +238,7 @@ public class PlayerController : MonoBehaviour
             playerRigidbody.linearVelocity = movement;
         }
 
-        playerAnimator.SetFloat("speed", Math.Abs(movement.x));
+        playerAnimator.SetFloat("speed", Mathf.Abs(movement.x));
 
         bool isAirborne = !isGrounded;
 
@@ -262,6 +266,26 @@ public class PlayerController : MonoBehaviour
             manualJump = false;
             isWallClinging = false;
         }
+
+        if (isGrounded && Mathf.Abs(movement.x) > 0.1f && !isDashing && !attacking)
+        {
+            footstepTimer += Time.deltaTime;
+
+            if (footstepTimer >= footstepInterval)
+            {
+                if (Mathf.Abs(horizontalInput * speed) > speed * 0.8f)
+                    sfxSource.PlayOneShot(runFX);
+                else
+                    sfxSource.PlayOneShot(walkFX);
+
+                footstepTimer = 0f;
+            }
+        }
+        else
+        {
+            footstepTimer = 0f; // Reset when idle or airborne
+        }
+
     }
 
     public void ApplyKnockback(Vector3 force, float duration)
@@ -274,6 +298,7 @@ public class PlayerController : MonoBehaviour
 
         // Restore after 0.2 seconds
         StartCoroutine(RestoreColor());
+        sfxSource.PlayOneShot(hurtFX);
     }
 
     void Jump()
@@ -291,6 +316,7 @@ public class PlayerController : MonoBehaviour
             playerRigidbody.AddForce(jumpDirection.normalized * jumpForce, ForceMode.Impulse);
             doubleJump = true;
             jumpRequested = false;
+            sfxSource.PlayOneShot(jumpFX);
         }
         else if (doubleJumpRequested)
         {
@@ -305,7 +331,7 @@ public class PlayerController : MonoBehaviour
                 isWallClinging = false;
             }
             playerRigidbody.AddForce(jumpDirection.normalized * (jumpForce * 1.1f), ForceMode.Impulse);
-
+            sfxSource.PlayOneShot(jumpFX);
         }
     }
 
@@ -313,12 +339,24 @@ public class PlayerController : MonoBehaviour
     {
         playerAnimator.Play("attackUp");
         playerAnimator.SetBool("attacking", true);
+        PlayRandomLightSaberFX();
     }
 
     void Attack()
     {
         playerAnimator.Play("attack");
         playerAnimator.SetBool("attacking", true);
+        PlayRandomLightSaberFX();
+    }
+
+
+    void PlayRandomLightSaberFX()
+    {
+        if (lightSaberFx.Length > 0)
+        {
+            AudioClip clip = lightSaberFx[Random.Range(0, lightSaberFx.Length)];
+            sfxSource.PlayOneShot(clip);
+        }
     }
 
     void OnCollisionEnter(Collision collision)

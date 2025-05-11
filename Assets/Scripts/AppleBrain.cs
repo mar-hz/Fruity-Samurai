@@ -16,6 +16,8 @@ public class AppleBrain : MonoBehaviour
     Animator animator;
     NPCExploder exploder;
     public bool exploded = false;
+    public AudioClip yippie;
+    public AudioClip death;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -84,6 +86,7 @@ public class AppleBrain : MonoBehaviour
                 exploder.Explode();
                 animator.SetBool("dead", true);
                 exploded = true;
+                exploder.sfxSource.PlayOneShot(death);
             }
 
         }
@@ -91,6 +94,7 @@ public class AppleBrain : MonoBehaviour
         {
             animator.SetBool("onGround", true);
             StartCoroutine(CountdownAndShrinkApple());
+            exploder.sfxSource.PlayOneShot(yippie);
         }
         body.excludeLayers = ignoredLayersOnDeath;
     }

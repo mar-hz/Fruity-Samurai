@@ -378,6 +378,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 522765ad5da63084c855406d5e90bc18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  exploded: 0
   gravitySlowdown: 0.2
   knockbackForce: 1000
 --- !u!114 &3880054713707026158
@@ -401,6 +402,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 200
   deadEnemies: DeadEnemies
+  explosionFX: {fileID: 8300000, guid: beaa626a565cf3a4cb0bc664341216f0, type: 3}
+  sfxSource: {fileID: 0}
 --- !u!114 &3892727102807564971
 MonoBehaviour:
   m_ObjectHideFlags: 0

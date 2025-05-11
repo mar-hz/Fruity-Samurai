@@ -1,3 +1,5 @@
+using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,7 +13,7 @@ public class GameSpawnerController : MonoBehaviour
     public int activeNPCs;
 
     public static GameSpawnerController instance;
-
+    
     public float minSpawnInterval = 1f;
     public float maxSpawnInterval = 4.5f;
 
@@ -19,6 +21,8 @@ public class GameSpawnerController : MonoBehaviour
     public int score;
     public float appleChance = 0.05f;
     public bool spawnEnabled = true;
+    public AudioSource sfxSource;
+    public AudioClip gameOver;
 
     void Awake()
     {
@@ -41,6 +45,9 @@ public class GameSpawnerController : MonoBehaviour
         if (volumeA == null)
             volumeA = GameObject.Find("Spawner").GetComponent<BoxCollider>();
 
+        if (sfxSource == null)
+            sfxSource = GameObject.Find("SFX_Samp").GetComponent<AudioSource>();
+
         spawnTimer -= Time.deltaTime;
 
         if (spawnTimer <= 0f)
@@ -54,6 +61,7 @@ public class GameSpawnerController : MonoBehaviour
     {
         GameObject prefabToSpawn = Random.value < appleChance ? apple : npcPrefab;
         GameObject npc = Instantiate(prefabToSpawn, GetRandomPointInVolume(volumeA), Quaternion.identity);
+        npc.GetComponent<NPCExploder>().sfxSource = sfxSource;
         totalCount++;
         activeNPCs++;
     }
@@ -91,6 +99,13 @@ public class GameSpawnerController : MonoBehaviour
         {
             HighScoreText.SaveHighScore(score);
         }
-        SceneManager.LoadScene(2);
+        StartCoroutine(PlaySoundThenLoad(2));
+    }
+
+    IEnumerator PlaySoundThenLoad(int sceneToLoad)
+    {
+        sfxSource.PlayOneShot(gameOver);
+        yield return new WaitForSeconds(gameOver.length);
+        SceneManager.LoadScene(sceneToLoad);
     }
 }
