@@ -9,7 +9,7 @@ public class HealthBar : MonoBehaviour
     float MaxHealth = 100f;
 
     public RectTransform healthBar;
-    float originalWidth = 500f;
+    float originalWidth = 100f;
 
     void Start()
     {
@@ -24,7 +24,7 @@ public class HealthBar : MonoBehaviour
         Health = health;
         // Debug.Log("og " + originalWidth);
         float newWidth = (Health / MaxHealth) * originalWidth; 
-        healthBar.sizeDelta = new Vector2(newWidth, 60f);
+        healthBar.sizeDelta = new Vector2(newWidth, 12f);
         // Debug.Log("new width " + healthBar.sizeDelta);
     }
 }

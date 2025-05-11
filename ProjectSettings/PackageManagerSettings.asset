@@ -27,7 +27,6 @@ MonoBehaviour:
     m_IsDefault: 1
     m_Capabilities: 7
     m_ConfigSource: 0
-  m_UserSelectedRegistryName: 
   - m_Id: scoped:project:Needle
     m_Name: Needle
     m_Url: https://packages.needle.tools
