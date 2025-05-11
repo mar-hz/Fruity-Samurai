@@ -62,6 +62,7 @@ public class BobExploder : MonoBehaviour
             if (part != transform && part.GetComponent<MeshRenderer>() != null)
             {
                 explodedParts.Add(part);
+                part.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }
         }
         StartCoroutine(CountdownAndShrink());

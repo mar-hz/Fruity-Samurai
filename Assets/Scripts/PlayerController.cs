@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEditor;
 using UnityEngine;
 
@@ -19,12 +20,17 @@ public class PlayerController : MonoBehaviour
     private float yAcceleration = 0f;
     bool canAttack = true;
     bool doubleJump = true;
+    public bool attacking = false;
+    public float knockbackTimer;
+    public Vector3 externalVelocity;
+    public GameObject pineappleMeshPart;
 
     void Start()
     {
         playerRigidbody = GetComponent<Rigidbody>();
         playerTransform = GetComponent<Transform>();
         playerAnimator = GetComponentInChildren<Animator>();
+        playerTransform.rotation = Quaternion.Euler(0, -90, 0);
     }
 
     void Update()
@@ -41,17 +47,40 @@ public class PlayerController : MonoBehaviour
         if (elapsedTime > idleCoolDown) elapsedTime = 0f;
         AnimatorStateInfo stateInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
 
-        if (stateInfo.IsName("attack") || stateInfo.IsName("attackUp"))
+        if (stateInfo.IsName("doubleJump"))
         {
             if (stateInfo.normalizedTime >= 1f)
             {
                 // Animation finished
                 canAttack = true;
+                playerAnimator.SetBool("attacking", false);
+            } else
+            {
+                canAttack = false;
             }
-            
+
         } else
         {
             canAttack = true;
+        }
+
+        if (stateInfo.IsName("attack") || stateInfo.IsName("attackUp"))
+        {
+            if (stateInfo.normalizedTime >= 1f)
+            {
+                // Animation finished
+                attacking = false;
+                playerAnimator.SetBool("attacking", false);
+            }
+            else
+            {
+                attacking = true;
+            }
+
+        }
+        else
+        {
+            attacking = false;
         }
 
         if (canAttack)
@@ -69,11 +98,33 @@ public class PlayerController : MonoBehaviour
             }
         }
         sprinting = Input.GetKey(KeyCode.LeftShift);
+
+        if (isGrounded && Input.GetKeyDown(KeyCode.Space))
+        {
+            jumpRequested = true;
+        }
+        else if (!isGrounded && doubleJump && Input.GetKeyDown(KeyCode.Space))
+        {
+            doubleJumpRequested = true;
+        }
+
+        if (!stateInfo.IsName("doubleJump"))
+        {
+            if (horizontalInput > 0)
+            {
+                playerTransform.rotation = Quaternion.Euler(0, 90, 0);
+            }
+            else if (horizontalInput < 0)
+            {
+                playerTransform.rotation = Quaternion.Euler(0, -90, 0);
+            }
+        }
     }
 
     float horizontalInput;
     float verticalInput;
     bool sprinting;
+    bool jumpRequested, doubleJumpRequested;
 
     void FixedUpdate()
     {
@@ -87,14 +138,6 @@ public class PlayerController : MonoBehaviour
         playerAnimator.SetFloat("yVel", playerRigidbody.linearVelocity.y);
 
         playerAnimator.SetFloat("direction", horizontalInput);
-        if (horizontalInput > 0)
-        {
-            playerTransform.rotation = Quaternion.Euler(0, 90, 0);
-        }
-        else if (horizontalInput < 0)
-        {
-            playerTransform.rotation = Quaternion.Euler(0, -90, 0);
-        }
 
         Jump();
         
@@ -110,46 +153,59 @@ public class PlayerController : MonoBehaviour
             ? new Vector3(horizontalInput * sprintSpeed, playerRigidbody.linearVelocity.y, 0) 
             : new Vector3(horizontalInput * speed, playerRigidbody.linearVelocity.y, 0);
 
-        playerRigidbody.linearVelocity = movement;
+
+        if (knockbackTimer > 0f)
+        {
+            playerRigidbody.linearVelocity = externalVelocity;
+            knockbackTimer -= Time.fixedDeltaTime;
+        }
+        else
+        {
+            playerRigidbody.linearVelocity = movement;
+        }
 
         playerAnimator.SetFloat("speed", Math.Abs(movement.x));
+    }
 
+    public void ApplyKnockback(Vector3 force, float duration)
+    {
+        externalVelocity = force;
+        knockbackTimer = duration;
 
-        
+        // Set color to red when damaged
+        ApplyShaderUniformToChildren(pineappleMeshPart, "baseColorFactor", Color.red);
+
+        // Restore after 0.2 seconds
+        StartCoroutine(RestoreColor());
     }
 
     void Jump()
     {
-        if (isGrounded && verticalInput > 0)
+        if (jumpRequested)
         {
             playerRigidbody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             doubleJump = true;
+            jumpRequested = false;
         }
-        else if (!isGrounded && doubleJump)
+        else if (doubleJumpRequested)
         {
-            if(Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.W))
-            {
-                // Check if the player is not already in a jump animation
-                AnimatorStateInfo stateInfo = playerAnimator.GetCurrentAnimatorStateInfo(0);
-                if (stateInfo.IsName("doubleJump"))
-                {
-                    return; // Prevent double jump if already in jump animation
-                }
-                
-                playerAnimator.SetTrigger("doubleJump");
-                playerRigidbody.AddForce(Vector3.up * (jumpForce * 1.5f), ForceMode.Impulse);
-                doubleJump = false;
-            }
+            playerAnimator.CrossFade("doubleJump", 0.1f);
+            playerRigidbody.AddForce(Vector3.up * (jumpForce * 1.1f), ForceMode.Impulse);
+            doubleJump = false;
+            doubleJumpRequested = false;
         }
     }
+
     void AttackUp()
     {
-        playerAnimator.SetTrigger("attkUp");
+        playerAnimator.Play("attackUp");
+        playerAnimator.SetBool("attacking", true);
     }
 
     void Attack()
     {
-        playerAnimator.SetTrigger("attk");
+        playerAnimator.Play("attack");
+        playerAnimator.SetBool("attacking", true);
     }
 
     void OnCollisionEnter(Collision collision)
@@ -177,4 +233,25 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void ApplyShaderUniformToChildren(GameObject root, string uniformName, Color value)
+    {
+        foreach (Transform child in root.transform)
+        {
+            MeshRenderer renderer = child.GetComponent<MeshRenderer>();
+            if (renderer != null && renderer.material != null)
+            {
+                renderer.material.SetColor(uniformName, value);
+            }
+
+            // Recursively search this child’s children
+            ApplyShaderUniformToChildren(child.gameObject, uniformName, value);
+        }
+    }
+
+
+    IEnumerator RestoreColor()
+    {
+        yield return new WaitForSeconds(0.2f);
+        ApplyShaderUniformToChildren(pineappleMeshPart, "baseColorFactor", Color.white); // Or whatever the original is
+    }
 }
