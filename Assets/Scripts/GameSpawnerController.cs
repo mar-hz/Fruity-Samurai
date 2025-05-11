@@ -31,11 +31,15 @@ public class GameSpawnerController : MonoBehaviour
     void Start()
     {
         ResetSpawnTimer();
+        HighScoreText.LoadHighScore();
     }
 
     void Update()
     {
         if (!spawnEnabled) return;
+
+        if (volumeA == null)
+            volumeA = GameObject.Find("Spawner").GetComponent<BoxCollider>();
 
         spawnTimer -= Time.deltaTime;
 
@@ -83,6 +87,10 @@ public class GameSpawnerController : MonoBehaviour
 
     public void GameFinish()
     {
-        // Not used anymore in infinite mode
+        if (score >= HighScoreText.highScore)
+        {
+            HighScoreText.SaveHighScore(score);
+        }
+        SceneManager.LoadScene(2);
     }
 }

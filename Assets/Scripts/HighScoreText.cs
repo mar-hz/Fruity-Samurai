@@ -5,9 +5,9 @@ using System.IO;
 
 public class HighScoreText : MonoBehaviour
 {
-    public GameObject pina;
     public TMP_Text txt;
-    private static string path = Application.persistentDataPath + "/highscore.json";
+    private static string path;
+    public static int highScore;
 
     public static void SaveHighScore(int score)
     {
@@ -18,17 +18,22 @@ public class HighScoreText : MonoBehaviour
 
     public static int LoadHighScore()
     {
+        path = Application.persistentDataPath + "/highscore.json";
+
         if (File.Exists(path))
         {
             string json = File.ReadAllText(path);
             HighScoreData data = JsonUtility.FromJson<HighScoreData>(json);
+            highScore = data.highScore;
             return data.highScore;
         }
+        highScore = 0;
         return 0;
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        path = Application.persistentDataPath + "/highscore.json";
         txt.text = "Highscore: " + LoadHighScore();
     }
 
