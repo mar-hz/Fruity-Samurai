@@ -320,7 +320,7 @@ public class PlayerController : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
         // Check if the player is colliding with the ground
-        if (collision.gameObject.CompareTag("Floor"))
+        if (collision.gameObject.CompareTag("Floor") || collision.gameObject.CompareTag("Platform"))
         {
             isGrounded = true;
             Vector3 velocity = playerRigidbody.linearVelocity;
@@ -353,7 +353,7 @@ public class PlayerController : MonoBehaviour
     void OnCollisionExit(Collision collision)
     {
         // Check if the player is leaving the ground
-        if (collision.gameObject.CompareTag("Floor"))
+        if (collision.gameObject.CompareTag("Floor") || collision.gameObject.CompareTag("Platform"))
         {
             isGrounded = false;
             playerAnimator.SetBool("isGrounded", false);
