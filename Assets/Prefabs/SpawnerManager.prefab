@@ -56,3 +56,4 @@ MonoBehaviour:
   spawnEnabled: 0
   sfxSource: {fileID: 0}
   gameOver: {fileID: 8300000, guid: 81cc45309ce58824ea5421544047e80d, type: 3}
+  spawnFx: {fileID: 8300000, guid: 44b9cbd13214a464bb2ad5af61377dd4, type: 3}

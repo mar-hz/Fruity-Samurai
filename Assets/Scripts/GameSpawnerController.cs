@@ -23,7 +23,7 @@ public class GameSpawnerController : MonoBehaviour
     public bool spawnEnabled = true;
     public AudioSource sfxSource;
     public AudioClip gameOver;
-
+    public AudioClip spawnFx;
     void Awake()
     {
         if (instance == null)
@@ -64,6 +64,9 @@ public class GameSpawnerController : MonoBehaviour
         npc.GetComponent<NPCExploder>().sfxSource = sfxSource;
         totalCount++;
         activeNPCs++;
+        sfxSource.pitch = Random.Range(0.9f, 1.1f); // Randomize pitch between 0.9 and 1.1
+        sfxSource.PlayOneShot(spawnFx);
+        sfxSource.pitch = 1f;
     }
 
     Vector3 GetRandomPointInVolume(BoxCollider volume)

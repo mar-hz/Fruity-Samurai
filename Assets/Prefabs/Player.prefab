@@ -123,6 +123,7 @@ MonoBehaviour:
   runFX: {fileID: 8300000, guid: e7b504277f6bed94380cc7c004479b89, type: 3}
   hurtFX: {fileID: 8300000, guid: f881f3e4ffdb981488dd3fa993a5b8c8, type: 3}
   dashFX: {fileID: 8300000, guid: ee0cee2d9cdea344ebc7a185cec9083e, type: 3}
+  multiplierUpFx: {fileID: 8300000, guid: 40e6e1576aa12ad42abf833561c577b0, type: 3}
   sfxSource: {fileID: 0}
   footstepInterval: 0.4
   isWallClinging: 0

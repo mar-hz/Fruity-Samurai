@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem.XR;
 using UnityEngine.SocialPlatforms.Impl;
@@ -18,6 +19,7 @@ public class AppleBrain : MonoBehaviour
     public bool exploded = false;
     public AudioClip yippie;
     public AudioClip death;
+    TMP_Text multiplier;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -29,6 +31,8 @@ public class AppleBrain : MonoBehaviour
         exploder = gameObject.GetComponent<NPCExploder>();
 
         healthbar = GameObject.Find("HealthBarElem").GetComponent<HealthBar>();
+        multiplier = GameObject.Find("MultiplierText").GetComponent<TMP_Text>();
+
     }
 
     void FixedUpdate()
@@ -76,9 +80,9 @@ public class AppleBrain : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
+            PlayerController controller = collision.gameObject.GetComponent<PlayerController>();
             if (collision.gameObject.GetComponent<PlayerController>().attacking)
             {
-                PlayerController controller = collision.gameObject.GetComponent<PlayerController>();
 
                 controller.health -= appleDamage;
                 healthbar.SetHealth((float)controller.health);
@@ -88,7 +92,7 @@ public class AppleBrain : MonoBehaviour
                 exploded = true;
                 exploder.sfxSource.PlayOneShot(death);
             }
-
+            multiplier.text = controller.multiplier.ToString();
         }
         else if (collision.gameObject.CompareTag("Floor") && !exploded)
         {

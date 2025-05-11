@@ -39,7 +39,7 @@ public class PlayerController : MonoBehaviour
     private bool isDashing = false;
     private float dashEndTime;
     public AudioClip[] lightSaberFx;
-    public AudioClip jumpFX, walkFX, runFX, hurtFX, dashFX;
+    public AudioClip jumpFX, walkFX, runFX, hurtFX, dashFX, multiplierUpFx;
     public AudioSource sfxSource;
     private float footstepTimer = 0f;
     public float footstepInterval = 0.4f;
@@ -172,9 +172,14 @@ public class PlayerController : MonoBehaviour
 
     public void RegisterHit()
     {
+        float olMultiplier = multiplier;
         comboCounter++;
         multiplier = 1f + Mathf.Floor(comboCounter / (float)comboThreshold);
         multiplier = Mathf.Min(multiplier, maxMultiplier); // Cap it
+        if (olMultiplier != multiplier)
+        {
+            sfxSource.PlayOneShot(multiplierUpFx);
+        }
     }
 
     public void OnPlayerDamagedOrMissed()

@@ -13,7 +13,7 @@ public class BobBrain : MonoBehaviour
     public bool exploded = false;
     public float gravitySlowdown = 0.5f;
     public float knockbackForce = 1000f;
-
+    public AudioClip groundFX;
     HealthBar healthbar;
     TMP_Text score;
     TMP_Text multiplier;
@@ -68,6 +68,7 @@ public class BobBrain : MonoBehaviour
         }
     }
 
+    bool hitPlayer = false;
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Player"))
@@ -108,6 +109,7 @@ public class BobBrain : MonoBehaviour
                     controller.health -= armorPoints["#" + ColorUtility.ToHtmlStringRGB(custom.customization.shirtColor)];
                     healthbar.SetHealth((float) controller.health);
                 }
+                hitPlayer = true;
             }
          
             body.excludeLayers = exploder.getIgnoredLayers();
@@ -117,6 +119,8 @@ public class BobBrain : MonoBehaviour
            animator.SetBool("onGround", true);
            StartCoroutine(exploder.CountdownAndShrinkMainobject());
            body.excludeLayers = exploder.getIgnoredLayers();
+            if (!hitPlayer)
+                exploder.sfxSource.PlayOneShot(groundFX);
             PlayerController controller = GameObject.Find("Player").GetComponent<PlayerController>();
             controller.OnPlayerDamagedOrMissed();
             multiplier.text = controller.multiplier.ToString();
