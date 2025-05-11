@@ -30,14 +30,14 @@ public class BobBrain : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.tag == "Player")
+        if (collision.gameObject.CompareTag("Player"))
         {
             exploder.Explode();
             body.excludeLayers = exploder.getIgnoredLayers();
             Destroy(collider);
             collider = null;
             exploded = true;
-        } else if(collision.gameObject.tag == "Floor" && !exploded)
+        } else if(collision.gameObject.CompareTag("Floor") && !exploded)
         {
            animator.SetBool("onGround", true);
            StartCoroutine(exploder.CountdownAndShrinkBob());
