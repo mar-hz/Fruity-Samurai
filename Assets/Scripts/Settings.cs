@@ -12,7 +12,7 @@ public class Settings : MonoBehaviour
     private GameObject currentSettingsMenu;
     public Slider music,sfx;
     public AudioMixer audioMixer;
-    int[] blacklist ={0}; // Array of scenes to blacklist
+    int[] blacklist ={0,2}; // Array of scenes to blacklist
     public GameObject goBackButton;
 
     public void OpenSettings() {
