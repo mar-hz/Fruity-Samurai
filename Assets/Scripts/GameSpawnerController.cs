@@ -64,10 +64,21 @@ public class GameSpawnerController : MonoBehaviour
         npc.GetComponent<NPCExploder>().sfxSource = sfxSource;
         totalCount++;
         activeNPCs++;
-        sfxSource.pitch = Random.Range(0.9f, 1.1f); // Randomize pitch between 0.9 and 1.1
-        sfxSource.PlayOneShot(spawnFx);
+
+        float randomizedPitch = Random.Range(0.8f, 1.3f);
+        sfxSource.pitch = randomizedPitch;
+        sfxSource.clip = spawnFx;
+        sfxSource.Play();
+
+        StartCoroutine(ResetPitchAfterDelay(spawnFx.length / randomizedPitch));
+    }
+
+    IEnumerator ResetPitchAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
         sfxSource.pitch = 1f;
     }
+
 
     Vector3 GetRandomPointInVolume(BoxCollider volume)
     {
