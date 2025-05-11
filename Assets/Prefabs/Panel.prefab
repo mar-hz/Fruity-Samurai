@@ -424,6 +424,8 @@ MonoBehaviour:
   sfx: {fileID: 5685444830511485339}
   audioMixer: {fileID: 24100000, guid: 4a3dea9f06c7b724baf6f2d7553d3100, type: 2}
   goBackButton: {fileID: 6155442424547943687}
+  sfxSource: {fileID: 0}
+  clickSound: {fileID: 8300000, guid: 0ba83a53c9085a64e88a119038893841, type: 3}
 --- !u!1 &4057396817169629517
 GameObject:
   m_ObjectHideFlags: 0
