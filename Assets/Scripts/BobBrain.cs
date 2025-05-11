@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.InputSystem.XR;
 
 public class BobBrain : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class BobBrain : MonoBehaviour
 
     HealthBar healthbar;
     TMP_Text score;
+    TMP_Text multiplier;
 
     public static Dictionary<string, int> armorPoints = new()  
     {
@@ -41,6 +43,7 @@ public class BobBrain : MonoBehaviour
         healthbar = GameObject.Find("HealthBarElem").GetComponent<HealthBar>();
         custom = gameObject.GetComponent<HumanCustomizer>();
         score = GameObject.Find("ScoreText").GetComponent<TMP_Text>();
+        multiplier = GameObject.Find("MultiplierText").GetComponent<TMP_Text>();
 
     }
 
@@ -78,9 +81,13 @@ public class BobBrain : MonoBehaviour
 
                 if (collision.gameObject.GetComponent<PlayerController>().alive)
                 {
-                    collision.gameObject.GetComponent<PlayerController>().score += armorPoints["#" + ColorUtility.ToHtmlStringRGB(custom.customization.shirtColor)];
+                    PlayerController controller = collision.gameObject.GetComponent<PlayerController>();
+
+                    controller.score += (int)(armorPoints["#" + ColorUtility.ToHtmlStringRGB(custom.customization.shirtColor)] * controller.multiplier);
                     healthbar.SetHealth((float)collision.gameObject.GetComponent<PlayerController>().health);
-                    score.text = collision.gameObject.GetComponent<PlayerController>().score.ToString();
+                    score.text = controller.score.ToString();
+                    controller.RegisterHit();
+                    multiplier.text = controller.multiplier.ToString();
                 }
             } else
             {
@@ -90,12 +97,15 @@ public class BobBrain : MonoBehaviour
 
                 float knockbackForce = 10f;
                 Vector3 knockback = new Vector3(direction * knockbackForce, 0, 0);
+                PlayerController controller = collision.gameObject.GetComponent<PlayerController>();
 
-                collision.gameObject.GetComponent<PlayerController>().ApplyKnockback(knockback, 0.2f); // 0.2s knockback override
+                controller.ApplyKnockback(knockback, 0.2f); // 0.2s knockback override
+                controller.OnPlayerDamagedOrMissed();
+                multiplier.text = controller.multiplier.ToString();
 
-                if (collision.gameObject.GetComponent<PlayerController>().alive && !animator.GetBool("onGround") && !exploded) {
-                    collision.gameObject.GetComponent<PlayerController>().health -= armorPoints["#" + ColorUtility.ToHtmlStringRGB(custom.customization.shirtColor)];
-                    healthbar.SetHealth((float) collision.gameObject.GetComponent<PlayerController>().health);
+                if (controller.alive && !animator.GetBool("onGround") && !exploded) {
+                    controller.health -= armorPoints["#" + ColorUtility.ToHtmlStringRGB(custom.customization.shirtColor)];
+                    healthbar.SetHealth((float) controller.health);
                 }
             }
          
@@ -106,6 +116,9 @@ public class BobBrain : MonoBehaviour
            animator.SetBool("onGround", true);
            StartCoroutine(exploder.CountdownAndShrinkBob());
            body.excludeLayers = exploder.getIgnoredLayers();
+            PlayerController controller = GameObject.Find("Player").GetComponent<PlayerController>();
+            controller.OnPlayerDamagedOrMissed();
+            multiplier.text = controller.multiplier.ToString();
         }
     }
 }

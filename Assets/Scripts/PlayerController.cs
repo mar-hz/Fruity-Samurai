@@ -30,6 +30,10 @@ public class PlayerController : MonoBehaviour
     public int health;
     public bool alive;
     public int score = 0;
+    public int comboThreshold = 5;
+    public int comboCounter = 0;
+    public float multiplier { get; private set; } = 1f;
+    public float maxMultiplier = 10.0f;
 
     void Start()
     {
@@ -149,6 +153,19 @@ public class PlayerController : MonoBehaviour
     bool jumpRequested, doubleJumpRequested;
     public bool isWallClinging = false, wallColliding = false;
     public int wallDir = 0; // 1 = right wall, -1 = left wall
+
+    public void RegisterHit()
+    {
+        comboCounter++;
+        multiplier = 1f + Mathf.Floor(comboCounter / (float)comboThreshold);
+        multiplier = Mathf.Min(multiplier, maxMultiplier); // Cap it
+    }
+
+    public void OnPlayerDamagedOrMissed()
+    {
+        comboCounter = 0;
+        multiplier = 1f;
+    }
 
     void FixedUpdate()
     {
