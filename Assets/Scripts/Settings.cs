@@ -11,8 +11,8 @@ public class Settings : MonoBehaviour
     public GameObject settingsMenu;
     private GameObject currentSettingsMenu;
     public Slider music,sfx;
-    // public AudioMixer audioMixer;
-    int[] blacklist ={1}; // Array of scenes to blacklist
+    public AudioMixer audioMixer;
+    int[] blacklist ={0}; // Array of scenes to blacklist
     public GameObject goBackButton;
 
     public void OpenSettings() {
@@ -38,14 +38,14 @@ public class Settings : MonoBehaviour
        Debug.Log("Settings menu closed.");
     }
 
-    // public void ChangeMusicVolume() {
-    //     audioMixer.SetFloat("Music", music.value);
-    //     Debug.Log("Music volume set to: " + music.value);
-    // }
-    //  public void ChangeSFXVolume() {
-    //     audioMixer.SetFloat("SFX", sfx.value);
-    //     Debug.Log("Music volume set to: " + sfx.value);
-    // }
+    public void ChangeMusicVolume() {
+        audioMixer.SetFloat("Music", music.value);
+        Debug.Log("Music volume set to: " + music.value);
+    }
+     public void ChangeSFXVolume() {
+        audioMixer.SetFloat("SFX", sfx.value);
+        Debug.Log("Music volume set to: " + sfx.value);
+    }
 
     public void ReturnMainMenu() {
         SceneManager.LoadScene(0);
