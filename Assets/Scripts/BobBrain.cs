@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections.Generic;
+using TMPro;
 
 public class BobBrain : MonoBehaviour
 {
@@ -11,6 +13,19 @@ public class BobBrain : MonoBehaviour
     public float gravitySlowdown = 0.5f;
     public float knockbackForce = 1000f;
 
+    HealthBar healthbar;
+    TMP_Text score;
+
+    public static Dictionary<string, int> armorPoints = new()  
+    {
+        { "#FF0078", 1 },
+        { "#007BFF", 3 },
+        { "#7E00FF", 5 },
+        { "#3DFF00", 10 },
+    };
+
+    HumanCustomizer custom;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -22,6 +37,11 @@ public class BobBrain : MonoBehaviour
 
         gameObject.transform.Find("Collider").gameObject.GetComponent<GenericListener>().onCollisionEnter.AddListener(OnCollisionEnter);
         body.linearVelocity = body.linearVelocity + Vector3.down;
+
+        healthbar = GameObject.Find("HealthBarElem").GetComponent<HealthBar>();
+        custom = gameObject.GetComponent<HumanCustomizer>();
+        score = GameObject.Find("ScoreText").GetComponent<TMP_Text>();
+
     }
 
     // Update is called once per frame
@@ -55,6 +75,13 @@ public class BobBrain : MonoBehaviour
                 Destroy(collider);
                 collider = null;
                 exploded = true;
+
+                if (collision.gameObject.GetComponent<PlayerController>().alive)
+                {
+                    collision.gameObject.GetComponent<PlayerController>().score += armorPoints["#" + ColorUtility.ToHtmlStringRGB(custom.customization.shirtColor)];
+                    healthbar.SetHealth((float)collision.gameObject.GetComponent<PlayerController>().health);
+                    score.text = collision.gameObject.GetComponent<PlayerController>().score.ToString();
+                }
             } else
             {
                 Rigidbody playerRb = collision.gameObject.GetComponent<Rigidbody>();
@@ -65,7 +92,13 @@ public class BobBrain : MonoBehaviour
                 Vector3 knockback = new Vector3(direction * knockbackForce, 0, 0);
 
                 collision.gameObject.GetComponent<PlayerController>().ApplyKnockback(knockback, 0.2f); // 0.2s knockback override
+
+                if (collision.gameObject.GetComponent<PlayerController>().alive && !animator.GetBool("onGround") && !exploded) {
+                    collision.gameObject.GetComponent<PlayerController>().health -= armorPoints["#" + ColorUtility.ToHtmlStringRGB(custom.customization.shirtColor)];
+                    healthbar.SetHealth((float) collision.gameObject.GetComponent<PlayerController>().health);
+                }
             }
+         
             body.excludeLayers = exploder.getIgnoredLayers();
         }
         else if(collision.gameObject.CompareTag("Floor") && !exploded)

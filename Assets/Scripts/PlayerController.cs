@@ -27,16 +27,27 @@ public class PlayerController : MonoBehaviour
     public GameObject pineappleMeshPart;
     bool manualJump = false;
 
+    public int health;
+    public bool alive;
+    public int score = 0;
+
     void Start()
     {
         playerRigidbody = GetComponent<Rigidbody>();
         playerTransform = GetComponent<Transform>();
         playerAnimator = GetComponentInChildren<Animator>();
         playerTransform.rotation = Quaternion.Euler(0, -90, 0);
+        health = 100;
+        alive = true;
     }
 
     void Update()
     {
+        if (!alive)
+        {
+            return;
+        }
+
         horizontalInput = Input.GetAxis("Horizontal");
         verticalInput = Input.GetAxis("Vertical");
         if (Input.GetKey(KeyCode.Space))
@@ -56,12 +67,14 @@ public class PlayerController : MonoBehaviour
                 // Animation finished
                 canAttack = true;
                 playerAnimator.SetBool("attacking", false);
-            } else
+            }
+            else
             {
                 canAttack = false;
             }
 
-        } else
+        }
+        else
         {
             canAttack = true;
         }
@@ -101,7 +114,7 @@ public class PlayerController : MonoBehaviour
         }
         sprinting = Input.GetKey(KeyCode.LeftShift);
         bool canJump = isGrounded || manualJump;
-        
+
         if (canJump && Input.GetKeyDown(KeyCode.Space))
         {
             jumpRequested = true;
@@ -121,6 +134,12 @@ public class PlayerController : MonoBehaviour
             {
                 playerTransform.rotation = Quaternion.Euler(0, -90, 0);
             }
+
+        }
+
+        if (health <= 0)
+        {
+            alive = false;
         }
     }
 
@@ -311,7 +330,7 @@ public class PlayerController : MonoBehaviour
                 renderer.material.SetColor(uniformName, value);
             }
 
-            // Recursively search this child’s children
+            // Recursively search this childï¿½s children
             ApplyShaderUniformToChildren(child.gameObject, uniformName, value);
         }
     }
