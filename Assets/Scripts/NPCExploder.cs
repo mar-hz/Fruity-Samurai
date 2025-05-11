@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BobExploder : MonoBehaviour
+public class NPCExploder : MonoBehaviour
 {
     public float explosionForce = 300f;
     public float explosionUpwardModifier = 2f;
@@ -107,7 +107,7 @@ public class BobExploder : MonoBehaviour
         Destroy(gameObject);
     }
 
-    public IEnumerator CountdownAndShrinkBob()
+    public IEnumerator CountdownAndShrinkMainobject()
     {
         // Countdown logic
         float timeRemaining = countdownTime;

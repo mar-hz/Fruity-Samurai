@@ -21,7 +21,7 @@ public class FollowParent : MonoBehaviour
 
     void LateUpdate()
     {
-        if (olParent == null || olParent.GetComponent<BobBrain>() != null && olParent.GetComponent<BobBrain>().exploded)
+        if (olParent == null || olParent.GetComponent<BobBrain>() != null && olParent.GetComponent<BobBrain>().exploded || olParent.GetComponent<AppleBrain>() !=null && olParent.GetComponent<AppleBrain>().exploded)
         {
             Destroy(gameObject);
             return;

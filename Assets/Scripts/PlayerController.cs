@@ -39,7 +39,7 @@ public class PlayerController : MonoBehaviour
     private float lastDashTime = -Mathf.Infinity;
     private bool isDashing = false;
     private float dashEndTime;
-
+  
 
     void Start()
     {
@@ -49,6 +49,7 @@ public class PlayerController : MonoBehaviour
         playerTransform.rotation = Quaternion.Euler(0, -90, 0);
         health = 100;
         alive = true;
+        GameSpawnerController.instance.spawnEnabled = true;
     }
 
     void Update()
@@ -154,6 +155,8 @@ public class PlayerController : MonoBehaviour
         if (health <= 0)
         {
             alive = false;
+            GameSpawnerController.instance.spawnEnabled = false;
+            GameSpawnerController.instance.GameFinish();
         }
     }
 
@@ -189,6 +192,7 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!alive) return;
        
         // Calculate Y acceleration
         float currentYVelocity = playerRigidbody.linearVelocity.y;

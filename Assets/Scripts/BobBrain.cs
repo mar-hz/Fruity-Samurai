@@ -7,7 +7,7 @@ public class BobBrain : MonoBehaviour
 {
     Animator animator;
     Rigidbody body;
-    BobExploder exploder;
+    NPCExploder exploder;
     Collider collider;
     Transform bobRoot;
     public bool exploded = false;
@@ -33,7 +33,7 @@ public class BobBrain : MonoBehaviour
     {
         animator = gameObject.GetComponent<Animator>();
         body = gameObject.GetComponent<Rigidbody>();
-        exploder = gameObject.GetComponent<BobExploder>();
+        exploder = gameObject.GetComponent<NPCExploder>();
         collider = gameObject.transform.Find("Collider").gameObject.GetComponent<Collider>();
         bobRoot = gameObject.transform.Find("Character");
 
@@ -63,7 +63,7 @@ public class BobBrain : MonoBehaviour
         if (Mathf.Abs(body.linearVelocity.y) < 0.1f && !exploded)
         {
             animator.SetBool("onGround", true);
-            StartCoroutine(exploder.CountdownAndShrinkBob());
+            StartCoroutine(exploder.CountdownAndShrinkMainobject());
             body.excludeLayers = exploder.getIgnoredLayers();
         }
     }
@@ -86,6 +86,7 @@ public class BobBrain : MonoBehaviour
                     controller.score += (int)(armorPoints["#" + ColorUtility.ToHtmlStringRGB(custom.customization.shirtColor)] * controller.multiplier);
                     healthbar.SetHealth((float)collision.gameObject.GetComponent<PlayerController>().health);
                     score.text = controller.score.ToString();
+                    GameSpawnerController.instance.score = controller.score;
                     controller.RegisterHit();
                     multiplier.text = controller.multiplier.ToString();
                 }
@@ -114,7 +115,7 @@ public class BobBrain : MonoBehaviour
         else if(collision.gameObject.CompareTag("Floor") && !exploded)
         {
            animator.SetBool("onGround", true);
-           StartCoroutine(exploder.CountdownAndShrinkBob());
+           StartCoroutine(exploder.CountdownAndShrinkMainobject());
            body.excludeLayers = exploder.getIgnoredLayers();
             PlayerController controller = GameObject.Find("Player").GetComponent<PlayerController>();
             controller.OnPlayerDamagedOrMissed();

@@ -5,6 +5,7 @@ public class GameSpawnerController : MonoBehaviour
 {
     public BoxCollider volumeA;
     public GameObject npcPrefab;
+    public GameObject apple;
 
     public int totalCount;
     public int activeNPCs;
@@ -15,6 +16,9 @@ public class GameSpawnerController : MonoBehaviour
     public float maxSpawnInterval = 4.5f;
 
     private float spawnTimer;
+    public int score;
+    public float appleChance = 0.05f;
+    public bool spawnEnabled = true;
 
     void Awake()
     {
@@ -31,6 +35,8 @@ public class GameSpawnerController : MonoBehaviour
 
     void Update()
     {
+        if (!spawnEnabled) return;
+
         spawnTimer -= Time.deltaTime;
 
         if (spawnTimer <= 0f)
@@ -42,7 +48,8 @@ public class GameSpawnerController : MonoBehaviour
 
     void SpawnNPC()
     {
-        GameObject npc = Instantiate(npcPrefab, GetRandomPointInVolume(volumeA), Quaternion.identity);
+        GameObject prefabToSpawn = Random.value < appleChance ? apple : npcPrefab;
+        GameObject npc = Instantiate(prefabToSpawn, GetRandomPointInVolume(volumeA), Quaternion.identity);
         totalCount++;
         activeNPCs++;
     }
@@ -60,6 +67,8 @@ public class GameSpawnerController : MonoBehaviour
 
     void ResetSpawnTimer()
     {
+        if (GameObject.Find("Player") == null) return;
+
         float multiplier = GameObject.Find("Player").GetComponent<PlayerController>().multiplier;
 
         // The more the combo, the faster the spawns (but never below minSpawnInterval)
