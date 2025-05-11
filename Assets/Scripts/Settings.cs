@@ -50,6 +50,4 @@ public class Settings : MonoBehaviour
     public void ReturnMainMenu() {
         SceneManager.LoadScene(0);
     }
-
-
 }
