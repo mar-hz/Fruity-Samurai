@@ -10,7 +10,6 @@ public class BobBrain : MonoBehaviour
     bool exploded = false;
     public float gravitySlowdown = 0.5f;
     public float knockbackForce = 1000f;
-    public GameObject pineappleMeshPart;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -53,7 +52,6 @@ public class BobBrain : MonoBehaviour
             if (collision.gameObject.GetComponent<PlayerController>().attacking)
             {
                 exploder.Explode();
-                body.excludeLayers = exploder.getIgnoredLayers();
                 Destroy(collider);
                 collider = null;
                 exploded = true;
@@ -68,11 +66,13 @@ public class BobBrain : MonoBehaviour
 
                 collision.gameObject.GetComponent<PlayerController>().ApplyKnockback(knockback, 0.2f); // 0.2s knockback override
             }
-        } else if(collision.gameObject.CompareTag("Floor") && !exploded)
+            body.excludeLayers = exploder.getIgnoredLayers();
+        }
+        else if(collision.gameObject.CompareTag("Floor") && !exploded)
         {
            animator.SetBool("onGround", true);
            StartCoroutine(exploder.CountdownAndShrinkBob());
-            body.excludeLayers = exploder.getIgnoredLayers();
+           body.excludeLayers = exploder.getIgnoredLayers();
         }
     }
 }

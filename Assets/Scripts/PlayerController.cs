@@ -147,7 +147,9 @@ public class PlayerController : MonoBehaviour
             Vector3 extraGravity = Vector3.up * Physics.gravity.y * fallMultiplier * Time.fixedDeltaTime;
             playerRigidbody.AddForce(extraGravity, ForceMode.VelocityChange);
         }
-        
+
+        if (horizontalInput > 0 && IsBlocked(Vector3.right)) horizontalInput = 0;
+        if (horizontalInput < 0 && IsBlocked(Vector3.left)) horizontalInput = 0;
 
         Vector3 movement = sprinting
             ? new Vector3(horizontalInput * sprintSpeed, playerRigidbody.linearVelocity.y, 0) 
@@ -248,10 +250,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
     IEnumerator RestoreColor()
     {
         yield return new WaitForSeconds(0.2f);
         ApplyShaderUniformToChildren(pineappleMeshPart, "baseColorFactor", Color.white); // Or whatever the original is
+    }
+
+    bool IsBlocked(Vector3 direction)
+    {
+        Ray ray = new Ray(playerTransform.position, direction);
+        return Physics.Raycast(ray, 0.6f, LayerMask.GetMask("Wall")); // Adjust distance & layer
     }
 }

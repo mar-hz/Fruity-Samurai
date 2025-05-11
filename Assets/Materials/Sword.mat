@@ -45,11 +45,12 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
+    - _BUILTIN_QueueControl: 1
     - _QueueControl: 1
     - metallicFactor: 0
     m_Colors:
     - baseColorFactor: {r: 1, g: 1, b: 1, a: 1}
-    - emissiveFactor: {r: 25.989786, g: 44.727062, b: 0, a: 0}
+    - emissiveFactor: {r: 19.65247, g: 44.727043, b: 0, a: 0}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
 --- !u!114 &2581308125939536449
