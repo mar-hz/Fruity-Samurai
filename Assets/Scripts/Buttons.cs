@@ -9,6 +9,10 @@ public class Buttons : MonoBehaviour
         SceneManager.LoadScene(1);
     }
 
+    public void ToMenu() {
+        SceneManager.LoadScene(0);
+    }
+
     // Update is called once per frame
     public void Salir()
     {
