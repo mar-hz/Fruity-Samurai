@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class BobBrain : MonoBehaviour
 {
@@ -11,6 +12,16 @@ public class BobBrain : MonoBehaviour
     public float gravitySlowdown = 0.5f;
     public float knockbackForce = 1000f;
 
+    public static Dictionary<string, int> armorPoints = new()  
+    {
+        { "#FF0078", 1 },
+        { "#007BFF", 3 },
+        { "#7E00FF", 5 },
+        { "#3DFF00", 10 },
+    };
+
+    HumanCustomizer custom;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -22,6 +33,8 @@ public class BobBrain : MonoBehaviour
 
         gameObject.transform.Find("Collider").gameObject.GetComponent<GenericListener>().onCollisionEnter.AddListener(OnCollisionEnter);
         body.linearVelocity = body.linearVelocity + Vector3.down;
+
+        custom = gameObject.GetComponent<HumanCustomizer>();
     }
 
     // Update is called once per frame
@@ -65,7 +78,12 @@ public class BobBrain : MonoBehaviour
                 Vector3 knockback = new Vector3(direction * knockbackForce, 0, 0);
 
                 collision.gameObject.GetComponent<PlayerController>().ApplyKnockback(knockback, 0.2f); // 0.2s knockback override
+
+                if (collision.gameObject.GetComponent<PlayerController>().alive && !animator.GetBool("onGround") && !exploded) {
+                    collision.gameObject.GetComponent<PlayerController>().health -= armorPoints["#" + ColorUtility.ToHtmlStringRGB(custom.customization.shirtColor)];
+                }
             }
+         
             body.excludeLayers = exploder.getIgnoredLayers();
         }
         else if(collision.gameObject.CompareTag("Floor") && !exploded)
