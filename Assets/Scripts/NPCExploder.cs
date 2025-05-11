@@ -15,8 +15,15 @@ public class NPCExploder : MonoBehaviour
     public AudioClip explosionFX;
     public AudioSource sfxSource;
 
+    private void Update()
+    {
+        if (sfxSource == null)
+            sfxSource = GameObject.Find("SFX_Samp").GetComponent<AudioSource>();
+    }
+
     public void Explode()
     {
+       
         sfxSource.PlayOneShot(explosionFX);
 
         GetComponent<Animator>().enabled = false;

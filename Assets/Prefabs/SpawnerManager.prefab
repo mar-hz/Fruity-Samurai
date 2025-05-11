@@ -55,4 +55,4 @@ MonoBehaviour:
   appleChance: 0.1
   spawnEnabled: 0
   sfxSource: {fileID: 0}
-  gameOver: {fileID: 8300000, guid: f881f3e4ffdb981488dd3fa993a5b8c8, type: 3}
+  gameOver: {fileID: 8300000, guid: 81cc45309ce58824ea5421544047e80d, type: 3}
